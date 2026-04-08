@@ -1,7 +1,11 @@
 const db = require('../config/db');
 const fs = require('fs');
 const crypto = require('crypto');
+const path = require('path');
 
+// ===============================
+// UPLOAD FILE + VERSION HANDLING
+// ===============================
 const uploadFile = (req, res) => {
     const user_id = req.body.user_id;
 
@@ -23,7 +27,7 @@ const uploadFile = (req, res) => {
 
     // Step 1: Check if file already exists for this user
     const checkFileQuery = `
-        SELECT * FROM files 
+        SELECT * FROM files
         WHERE user_id = ? AND original_name = ?
     `;
 
@@ -42,8 +46,8 @@ const uploadFile = (req, res) => {
 
             // Update latest version in files table
             const updateFileQuery = `
-                UPDATE files 
-                SET latest_version = ? 
+                UPDATE files
+                SET latest_version = ?
                 WHERE file_id = ?
             `;
 
@@ -54,7 +58,7 @@ const uploadFile = (req, res) => {
 
                 // Insert new version into file_versions
                 const insertVersionQuery = `
-                    INSERT INTO file_versions 
+                    INSERT INTO file_versions
                     (file_id, version_number, s3_url, file_size, file_hash)
                     VALUES (?, ?, ?, ?, ?)
                 `;
@@ -70,7 +74,10 @@ const uploadFile = (req, res) => {
                             file_id,
                             original_name,
                             version: nextVersion,
-                            file_type
+                            file_type,
+                            file_size,
+                            file_hash,
+                            file_path: s3_url
                         }
                     });
                 });
@@ -94,7 +101,7 @@ const uploadFile = (req, res) => {
                 const file_id = result.insertId;
 
                 const insertVersionQuery = `
-                    INSERT INTO file_versions 
+                    INSERT INTO file_versions
                     (file_id, version_number, s3_url, file_size, file_hash)
                     VALUES (?, ?, ?, ?, ?)
                 `;
@@ -110,7 +117,10 @@ const uploadFile = (req, res) => {
                             file_id,
                             original_name,
                             version: 1,
-                            file_type
+                            file_type,
+                            file_size,
+                            file_hash,
+                            file_path: s3_url
                         }
                     });
                 });
@@ -118,6 +128,9 @@ const uploadFile = (req, res) => {
         }
     });
 };
+// ===============================
+// RESTORE FILE VERSION
+// ===============================
 const restoreFileVersion = (req, res) => {
     const { file_id, version_number } = req.body;
 
@@ -125,7 +138,6 @@ const restoreFileVersion = (req, res) => {
         return res.status(400).json({ message: 'file_id and version_number are required' });
     }
 
-    // Step 1: Check if that version exists
     const checkVersionQuery = `
         SELECT * FROM file_versions
         WHERE file_id = ? AND version_number = ?
@@ -142,7 +154,6 @@ const restoreFileVersion = (req, res) => {
 
         const versionData = results[0];
 
-        // Step 2: Mark that version as restored
         const restoreQuery = `
             UPDATE file_versions
             SET is_restored = TRUE
@@ -154,9 +165,8 @@ const restoreFileVersion = (req, res) => {
                 return res.status(500).json({ message: 'Restore failed', error: err2.message });
             }
 
-            // Step 3: Save restore action in backup_history
             const historyQuery = `
-                INSERT INTO backup_history (file_id, version_id, action_type, notes)
+                INSERT INTO backup_history (file_id, version_id, action_type, note)
                 VALUES (?, ?, 'RESTORE', ?)
             `;
 
@@ -180,12 +190,15 @@ const restoreFileVersion = (req, res) => {
         });
     });
 };
-// Get all versions of a file
+
+// ===============================
+// GET FILE VERSIONS
+// ===============================
 const getFileVersions = (req, res) => {
     const { file_id } = req.params;
 
     const query = `
-        SELECT version_id, version_number, s3_url, file_size, file_hash, created_at
+        SELECT version_id, version_number, s3_url, file_size, file_hash, created_at, is_restored
         FROM file_versions
         WHERE file_id = ?
         ORDER BY version_number DESC
@@ -206,7 +219,9 @@ const getFileVersions = (req, res) => {
     });
 };
 
-// Get backup history / timeline
+// ===============================
+// GET BACKUP HISTORY
+// ===============================
 const getBackupHistory = (req, res) => {
     const { file_id } = req.params;
 
@@ -231,6 +246,10 @@ const getBackupHistory = (req, res) => {
         });
     });
 };
+
+// ===============================
+// SMART BACKUP SUGGESTION
+// ===============================
 const suggestBackupFrequency = (req, res) => {
     const { user_id } = req.params;
 
@@ -268,6 +287,7 @@ const suggestBackupFrequency = (req, res) => {
         });
     });
 };
+
 module.exports = {
     uploadFile,
     restoreFileVersion,

@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 
+
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
