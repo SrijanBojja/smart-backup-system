@@ -6,7 +6,8 @@ const {
     restoreFileVersion,
     getFileVersions,
     getBackupHistory,
-    suggestBackupFrequency
+    suggestBackupFrequency,
+    getUserFiles
 } = require('../controllers/fileController');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -25,4 +26,6 @@ router.get('/history/:file_id', getBackupHistory);
 
 // Suggest backup frequency for a user
 router.get('/suggest/:user_id', suggestBackupFrequency);
+
+router.get('/user/:user_id', getUserFiles);
 module.exports = router;
