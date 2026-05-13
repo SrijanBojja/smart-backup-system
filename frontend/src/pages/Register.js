@@ -19,7 +19,7 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const res = await API.post('/auth/register', form);
+      const res = await API.post('/auth/register', data);
       alert(res.data.message);
       navigate('/login');
     } catch (err) {
