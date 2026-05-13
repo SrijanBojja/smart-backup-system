@@ -1,5 +1,6 @@
+require('dotenv').config();
 const dotenv = require('dotenv');
-dotenv.config(); // ✅ MUST BE FIRST
+dotenv.config();
 
 const express = require('express');
 const cors = require('cors');
@@ -7,7 +8,6 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 
-// DB connection
 require('./config/db');
 
 const app = express();
@@ -31,5 +31,5 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log("AWS KEY:", process.env.AWS_ACCESS_KEY); // ✅ debug
+  console.log("AWS KEY:", process.env.AWS_ACCESS_KEY);
 });
