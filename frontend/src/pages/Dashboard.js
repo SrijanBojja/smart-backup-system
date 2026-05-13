@@ -22,7 +22,7 @@ const Dashboard = () => {
     } catch (err) {
       console.log("Fetch files error:", err);
     }
-  }, []);
+  }, [userId]);
 
   // Fetch versions
   const fetchVersions = async (fileId) => {
