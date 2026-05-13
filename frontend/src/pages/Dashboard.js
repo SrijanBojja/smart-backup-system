@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import API from '../services/api';
 
 const Dashboard = () => {
@@ -15,14 +15,14 @@ const Dashboard = () => {
   };
 
   // Fetch user files
-  const fetchFiles = async () => {
+  const fetchFiles = useCallback(async () => {
     try {
       const res = await API.get(`/files/user/${userId}`);
       setFiles(res.data.files);
     } catch (err) {
       console.log("Fetch files error:", err);
     }
-  };
+  }, []);
 
   // Fetch versions
   const fetchVersions = async (fileId) => {
