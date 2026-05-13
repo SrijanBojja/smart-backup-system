@@ -17,13 +17,9 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = {
-    name,
-    email,
-    password
-  };
+
     try {
-      const res = await API.post('/auth/register', data);
+      const res = await API.post('/auth/register', form); // ✅ FIXED
       alert(res.data.message);
       navigate('/login');
     } catch (err) {
@@ -36,9 +32,27 @@ const Register = () => {
       <h2>Create Account</h2>
 
       <form onSubmit={handleSubmit} className="form-box">
-        <input name="name" placeholder="Full Name" onChange={handleChange} />
-        <input name="email" placeholder="Email" onChange={handleChange} />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} />
+        <input
+          name="name"
+          placeholder="Full Name"
+          value={form.name}
+          onChange={handleChange}
+        />
+
+        <input
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
+
+        <input
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+        />
 
         <button type="submit">Register</button>
       </form>
