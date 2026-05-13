@@ -85,8 +85,8 @@ const Dashboard = () => {
 
   // Load files on page load
   useEffect(() => {
-    fetchFiles();
-  }, []);
+  fetchFiles();
+}, [fetchFiles]);
 
   return (
     <div className="container">
